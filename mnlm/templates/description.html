@@ -1,0 +1,65 @@
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="/static/css/bootstrap-combined.min.css">
+</head>
+<body>
+<div class="container-fluid">
+	<div class="row-fluid">
+		<div class="span12">
+			<h3 class="text-center text-success" style="margin-top:40px">
+				Describing Images in Natural Language
+			</h3>
+			<div class="row-fluid" style="margin:70 auto; width: 1500px;">
+				<div class="span1">
+				</div>
+				<div class="span10">
+					<div class="row-fluid">
+						<div class="span6">
+							<form class="form-inline" action="/mnlm/" method="post">
+								{% csrf_token %}
+								<fieldset>
+									<label for="im_index">序号：</label>
+									<input type="number" min="0" max="1961" id="im_index" name="im_index" style="height:25px"/> 
+									<input type="submit" value="提交">
+								</fieldset>
+							</form>
+							<img class="img-rounded" alt="140x140" src="{{ im_path }}" />
+							<div>
+								<h5 style="margin-top:40px">
+									检索结果：
+								</h5>
+								<div>
+									{% for d in retr_desc%}
+									<p>{{ d }}</p>
+									{% endfor %}
+								</div>
+							</div>
+							<div>
+								<h5 style="margin-top:40px">
+									生成结果：
+								</h5>
+								<div>
+									{% for d in gen_desc%}
+									<p>{{ d }}</p>
+									{% endfor %}
+								</div>	
+							</div>	
+						</div>
+						<div class="span6">
+							<a href="/mnlm/{{ cur_index }}">换一批...</a><br />
+							 {% for i, im in ran_im_dict %}
+							 <a href="/mnlm/{{ i }}/">
+							 <img class="img-rounded" alt="140x140" src="{{ im }}"  width="140" height="140" style="margin:10"/>
+							 </a>
+							 {% endfor %}
+						</div>
+					</div>
+				</div>
+				<div class="span1">
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+</body>
+</html>
