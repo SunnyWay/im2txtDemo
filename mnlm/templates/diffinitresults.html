@@ -26,16 +26,20 @@
 					</tr>
 				</thead>
 				<tbody>
-					{% for im_path, bank, similar in table %}
+					{% for im_path, blank, similar in table %}
 					<tr>
 						<td>
 							<img class="img-rounded" alt="140x140" src="{{ im_path }}" width="140" height="140"/>
 						</td>
 						<td>
-							{{ bank }}
+							{% for s in blank%}
+							<p> {{ s }} </p>
+							{% endfor %}
 						</td>
 						<td>
-							{{ similar }}
+							{% for s in similar%}
+							<p> {{ s }} </p>
+							{% endfor %}
 						</td>
 					</tr>
 					{% endfor %}

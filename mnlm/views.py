@@ -9,7 +9,7 @@ from models.utils import stop
 import random
 
 import sys
-sys.path.append("/home/pzy/im2txtDemo/mnlm/models")
+sys.path.append("/home/p-what/serverCode/im2txtDemo/mnlm/models")
 (z, zt) = proc.process()
 net = stop.load_model('mnlm/models/models/mlbl.pkl')
 
@@ -40,20 +40,25 @@ def description(request, im_index):
 
 def diffinitresults(request):
 	IM_PATH = "/static/iaprtc12/images/"
-	BANK_RESULT = "mnlm/models/bank-init-results.txt"
+	BLANK_RESULT = "mnlm/models/blank-init-results.txt"
 	SIMILAR_RESULT = "mnlm/models/similar-init-results.txt"
 
 	im_path = expr.get_im_path(range(len(zt['IM'])), IM_PATH)
-	f = open(BANK_RESULT, "rb")
-	bank_results = f.readlines()
+	f = open(BLANK_RESULT, "rb")
+	blank_results = f.readlines()
 	f.close()
 
 	f = open(SIMILAR_RESULT, "rb")
 	similar_results = f.readlines()
 	f.close()
 
-	table = zip(im_path, bank_results, similar_results)
-	print table
+	blank_results = [ l.strip().replace("<end>", "").split(";") for l in blank_results ]
+	blank_results = [ [ s.strip() +'.' for s in cap if s.strip() ] for cap in blank_results ]
+
+	similar_results = [ l.strip().replace("<end>", "").split(";") for l in similar_results ]
+	similar_results = [ [ s.strip() +'.' for s in cap if s.strip() ] for cap in similar_results ]
+
+	table = zip(im_path, blank_results, similar_results)
 	return render(request, 'diffinitresults.html', {
 		"table": table
 		})

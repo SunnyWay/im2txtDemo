@@ -14,10 +14,10 @@ def process():
     Specify the following:
     """
     ##################################
-    train_captions = '/home/pzy/im2txtDemo/mnlm/models/iaprtc12/train_captions.txt'
-    train_images = '/home/pzy/im2txtDemo/mnlm/models/iaprtc12/train_hidden7.txt'
-    test_captions = '/home/pzy/im2txtDemo/mnlm/models/iaprtc12/test_captions.txt'
-    test_images = '/home/pzy/im2txtDemo/mnlm/models/iaprtc12/test_hidden7.txt'
+    train_captions = '/home/p-what/serverCode/im2txtDemo/mnlm/models/iaprtc12/train_captions.txt'
+    train_images = '/home/p-what/serverCode/im2txtDemo/mnlm/models/iaprtc12/train_hidden7.txt'
+    test_captions = '/home/p-what/serverCode/im2txtDemo/mnlm/models/iaprtc12/test_captions.txt'
+    test_images = '/home/p-what/serverCode/im2txtDemo/mnlm/models/iaprtc12/test_hidden7.txt'
     context = 5
     ##################################
 

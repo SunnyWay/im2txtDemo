@@ -16,7 +16,7 @@ def cal():
 	start = time.time()
 	cal_bank_init()
 	end = time.time()
-	print 'cal_bank_init: %i' % (end-start)
+	print 'cal_blank_init: %i' % (end-start)
 	start = time.time()
 	cal_similar_init()
 	end = time.time()
@@ -31,7 +31,7 @@ def cal_bank_init():
 	for i in range(test_sample_count):
 		li.append(expr.generate(net, z, im=zt['IM'][i])+'\n')
 
-	output = open('bank-init-results.txt','wb')
+	output = open('blank-init-results.txt','wb')
 	try:
 		output.writelines(li)
 	finally:
