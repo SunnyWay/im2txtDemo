@@ -1,0 +1,50 @@
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="/static/css/bootstrap-combined.min.css">
+</head>
+<body>
+<div class="container-fluid">
+	<div class="row-fluid">
+		<div class="span2">
+		</div>
+		<div class="span8">
+			<h3 class="text-center text-info"  style="margin-top:40px">
+				Results of different initial context
+			</h3>
+			<table class="table table-bordered" style="margin-top:50px">
+				<thead>
+					<tr>
+						<th>
+							Image
+						</th>
+						<th>
+							&lt;start&gt; as Context
+						</th>
+						<th>
+							Context from similar Image
+						</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for im_path, bank, similar in table %}
+					<tr>
+						<td>
+							<img class="img-rounded" alt="140x140" src="{{ im_path }}" width="140" height="140"/>
+						</td>
+						<td>
+							{{ bank }}
+						</td>
+						<td>
+							{{ similar }}
+						</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+		<div class="span2">
+		</div>
+	</div>
+</div>
+</body>
+</html>
