@@ -2,16 +2,18 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.shortcuts import render
 
-from models import expr
-from models import proc
-from models.utils import stop
+from engine import expr
+from engine import proc
+from engine.utils import stop
+
+from .models  import DiffInitEval
 
 import random
 
 import sys
-sys.path.append("/home/p-what/serverCode/im2txtDemo/mnlm/models")
+sys.path.append("/home/p-what/serverCode/im2txtDemo/mnlm/engine")
 (z, zt) = proc.process()
-net = stop.load_model('mnlm/models/models/mlbl.pkl')
+net = stop.load_model('mnlm/engine/models/mlbl.pkl')
 
 # Create your views here.
 def index(request):
@@ -40,8 +42,8 @@ def description(request, im_index):
 
 def diffinitresults(request):
 	IM_PATH = "/static/iaprtc12/images/"
-	BLANK_RESULT = "mnlm/models/blank-init-results.txt"
-	SIMILAR_RESULT = "mnlm/models/similar-init-results.txt"
+	BLANK_RESULT = "mnlm/engine/blank-init-results.txt"
+	SIMILAR_RESULT = "mnlm/engine/similar-init-results.txt"
 
 	im_path = expr.get_im_path(range(len(zt['IM'])), IM_PATH)
 	f = open(BLANK_RESULT, "rb")
@@ -60,5 +62,46 @@ def diffinitresults(request):
 
 	table = zip(im_path, blank_results, similar_results)
 	return render(request, 'diffinitresults.html', {
-		"table": table
+		"table": table,
 		})
+
+def evaldiffinit(request):
+	IM_PATH = "/static/iaprtc12/images/"
+	BLANK_RESULT = "mnlm/engine/blank-init-results.txt"
+	SIMILAR_RESULT = "mnlm/engine/similar-init-results.txt"
+
+	index = random.randint(0, len(zt['IM'])-1)
+	im_path = expr.get_im_path([index],  IM_PATH)[0]
+
+	f = open(BLANK_RESULT, "rb")
+	blank = f.readlines()[index]
+	f.close()
+
+	f = open(SIMILAR_RESULT, "rb")
+	similar = f.readlines()[index]
+	f.close()
+
+	blank = blank.replace('<end>', '').split(';')
+	blank = [ s.strip() + '.' for s in blank if s.strip() ]
+
+	similar = similar.replace('<end>', '').split(';')
+	similar = [ s.strip() + '.' for s in similar if s.strip() ]
+
+	return render(request, 'evaldiffinit.html', {
+		"index": index,
+		"im_path": im_path,
+		"blank": blank,
+		"similar": similar,
+		})
+
+def evaldiffinitvote(request, im_index, vote):
+	q = DiffInitEval.objects.get(im_index=int(im_index))
+	if q :
+		if vote == '0':
+			q.blank = q.blank + 1
+		elif vote == '1':
+			q.equ = q.equ + 1
+		elif vote == '2':
+			q.similar = q.similar + 1
+		q.save()
+	return redirect('evaldiffinit')

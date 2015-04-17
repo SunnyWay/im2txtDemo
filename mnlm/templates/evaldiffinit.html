@@ -1,0 +1,47 @@
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="/static/css/bootstrap-combined.min.css">
+</head>
+<body>
+<div class="container-fluid">
+	<div class="row-fluid">
+		<div class="span2">
+		</div>
+		<div class="span8">
+			<h3 class="text-center text-info">
+				Which sentence is better？
+			</h3>
+			<table class="table table-bordered" style="margin-top:50px;font-size:20px;">
+				<tr>
+					<td rowspan="2">
+						<div align="middle"><img class="img-polaroid" alt="140x140" src="{{ im_path }}" /></div>
+					</td>
+					<td style="vertical-align: middle">
+						{% for s in blank%}
+						<p> {{ s }} </p>
+						{% endfor %}
+					</td>
+				</tr>
+				<tr>
+					<td  style="vertical-align: middle">
+						{% for s in similar%}
+						<p> {{ s }} </p>
+						{% endfor %}
+					</td>
+				</tr>
+			</table>
+			<div  align="right">
+				<div class="btn-group" style="margin:20px">
+					<a href="/mnlm/evaldiffinit/{{ index }}/0/"><button class="btn btn-large" type="button"><em class="icon-arrow-up"></em></button></a>
+					<a href="/mnlm/evaldiffinit/{{ index }}/1/"><button class="btn btn-large" type="button"><em class="icon-align-center"></em></button></a>
+					<a href="/mnlm/evaldiffinit/{{ index }}/2/"><button class="btn btn-large" type="button"><em class="icon-arrow-down"></em></button></a>
+					<a href="/mnlm/0/"><button class="btn btn-large" type="button"><em class="icon-circle-arrow-left"></em></button></a>
+				</div>
+			</div>
+		</div>
+		<div class="span2">
+		</div>
+	</div>
+</div>
+</body>
+</html>

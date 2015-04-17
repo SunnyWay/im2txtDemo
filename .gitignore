@@ -58,4 +58,7 @@ target/
 
 log
 mnlm/static/iaprtc12/
-mnlm/models/iaprtc12/
+mnlm/engine/iaprtc12/
+*.sqlite3
+mnlm/engine/blank-init-results.txt
+mnlm/engine/similar-init-results.txt

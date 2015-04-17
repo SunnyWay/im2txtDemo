@@ -7,7 +7,7 @@
 
 
 import numpy as np
-from mnlm.models import gnumpy as gpu
+from mnlm.engine import gnumpy as gpu
 import cPickle as pickle
 
 def save_model(net, loc):

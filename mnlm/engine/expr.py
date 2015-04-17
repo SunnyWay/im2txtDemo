@@ -7,7 +7,7 @@ from PIL import Image
 
 def get_im_path(indexlist, path):
     ##### Modify these: #####
-    testloc = 'mnlm/models/iaprtc12/iaprtc12_test_list.txt'
+    testloc = 'mnlm/engine/iaprtc12/iaprtc12_test_list.txt'
     #########################
     f = open(testloc, 'rb')
     ims = []
