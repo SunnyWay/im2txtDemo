@@ -23,7 +23,7 @@ def vis(group, indexlist, save=False):
     Visualize images from IAPR TC-12
     """
     ##### Modify these: #####
-    imageloc = '/home/pzy/Code/im2txtDemo/mnlm/static/iaprtc12/images/'
+    imageloc = '/home/p-what/serverCode/im2txtDemo/mnlm/static/iaprtc12/images/'
     trainloc = 'iaprtc12/iaprtc12_train_list.txt'
     testloc = 'iaprtc12/iaprtc12_test_list.txt'
     #########################
