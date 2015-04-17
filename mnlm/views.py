@@ -34,6 +34,6 @@ def description(request, im_index):
 		})
 
 import sys
-sys.path.append("/home/p-what/serverCode/im2txtDemo/mnlm/models")
+sys.path.append("/home/pzy/im2txtDemo/mnlm/models")
 (z, zt) = proc.process()
 net = stop.load_model('mnlm/models/models/mlbl.pkl')
