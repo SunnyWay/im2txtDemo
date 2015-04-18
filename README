@@ -1,0 +1,12 @@
+1. 将iapr tc12数据集解压后放在 mnlm/static/ 目录下，解压后的文件名为 iaprtc12；所以最后的目录应该长成这样 mnlm/static/iaprtc12；
+2. 将训练好的模型放到 mnlm/engine/models/ 目录下；
+3. 将划分好的训练集和测试集列表放到 mnlm/engin/iaprtc12/ 目录下；
+4. 建立数据库：
+	运行 python manage.py makemigrations mnlm ，通知 django 保存对数据库进行的更改。
+	运行 python manage.py migrate，执行对数据库的更改。
+	运行 python manage.py shell 进入 python 环境，执行如下代码：
+		from mnlm.models import DiffInitEval
+		for i in range(1962):
+			q = DiffInitEval(im_index=i, blank=0, equ=0, similar=0)
+			q.save()
+	其中 1962 是测试图片的数量。

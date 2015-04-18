@@ -11,7 +11,8 @@ from .models  import DiffInitEval
 import random
 
 import sys
-sys.path.append("/home/p-what/serverCode/im2txtDemo/mnlm/engine")
+import os
+sys.path.append( os.getcwd() + "/mnlm/engine")
 (z, zt) = proc.process()
 net = stop.load_model('mnlm/engine/models/mlbl.pkl')
 
