@@ -23,6 +23,13 @@
 									<input type="submit" value="提交">
 								</fieldset>
 							</form>
+							<form class="form-inline" action="/mnlm/upload/" method="post" enctype="multipart/form-data">
+								{% csrf_token %}
+								<fieldset>
+									<input type="file" accept="image/*" name="upload_im" style="width:252px" />
+									<input type="submit" value="上传" />
+								</fieldset>
+							</form>
 							<img class="img-rounded" alt="140x140" src="{{ im_path }}" />
 							<div>
 								<h5 style="margin-top:40px">

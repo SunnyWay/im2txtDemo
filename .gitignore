@@ -62,3 +62,4 @@ mnlm/engine/iaprtc12/
 *.sqlite3
 mnlm/engine/blank-init-results.txt
 mnlm/engine/similar-init-results.txt
+mnlm/static/upload/

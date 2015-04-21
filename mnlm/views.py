@@ -9,6 +9,9 @@ from engine.utils import stop
 from .models  import DiffInitEval
 
 import random
+import time
+
+import Image
 
 import sys
 import os
@@ -30,14 +33,12 @@ def description(request, im_index):
 	gen_desc = expr.generate(net, z, im=zt['IM'][int(im_index)]).replace('<end>', '').split(';')
 	gen_desc = [de+';' for de in [d.strip() for d in gen_desc] if de]
 	im_path = expr.get_im_path([int(im_index)], "/static/iaprtc12/images/")
-	ran_im_index = range(len(zt['IM']))
-	random.shuffle(ran_im_index)
-	ran_im_path = expr.get_im_path(ran_im_index[:9], "/static/iaprtc12/images/")
+
 	return render(request, 'description.html', {
 		"retr_desc": retr_desc,
 		"gen_desc": gen_desc,
 		"im_path": im_path[0],
-		"ran_im_dict": zip(ran_im_index[:9], ran_im_path), 
+		"ran_im_dict": get_rand_ims(), 
 		"cur_index": im_index,
 		})
 
@@ -106,3 +107,29 @@ def evaldiffinitvote(request, im_index, vote):
 			q.similar = q.similar + 1
 		q.save()
 	return redirect('evaldiffinit')
+
+def uploaddesc(request):
+	upload_im = request.FILES['upload_im']
+	im = Image.open(upload_im)
+	fname = get_time_stamp()+'.jpg'
+	im.save( os.getcwd() + '/mnlm/static/upload/' + fname, "JPEG")
+
+	return render(request, 'description.html', {
+		"retr_desc": '',
+		"gen_desc": '',
+		"im_path":  '/static/upload/'+fname,
+		"ran_im_dict": get_rand_ims(), 
+		"cur_index": 0,
+		})
+
+
+def get_time_stamp():
+	prefix = time.strftime("%y%m%d%H%M%S", time.localtime(time.time()))
+	suffix = ('0000'+str(int(random.random()*10000)))[-4:]
+	return prefix+suffix
+
+def get_rand_ims():
+	ran_im_index = range(len(zt['IM']))
+	random.shuffle(ran_im_index)
+	ran_im_path = expr.get_im_path(ran_im_index[:9], "/static/iaprtc12/images/")
+	return zip(ran_im_index[:9], ran_im_path)
