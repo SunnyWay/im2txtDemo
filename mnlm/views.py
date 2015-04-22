@@ -13,6 +13,8 @@ import time
 
 import Image
 
+import h5py
+
 import sys
 import os
 sys.path.append( os.getcwd() + "/mnlm/engine")
@@ -109,15 +111,59 @@ def evaldiffinitvote(request, im_index, vote):
 	return redirect('evaldiffinit')
 
 def uploaddesc(request):
+	# save the upload image
+	print 'save upload image to /mnlm/static/upload/\n'
 	upload_im = request.FILES['upload_im']
 	im = Image.open(upload_im)
-	fname = get_time_stamp()+'.jpg'
-	im.save( os.getcwd() + '/mnlm/static/upload/' + fname, "JPEG")
+	fname = get_time_stamp()
+	full_name = os.getcwd() + '/mnlm/static/upload/' + fname
+	im.save( full_name + '.jpg', "JPEG")
 
+	# save the upload image path to file
+	print 'save upload image path to' + fname + '_path.txt\n'
+	outfile = open(full_name+'_path.txt', 'wb')
+	for i in range(10):
+		outfile.write(full_name+'.jpg'+'\n')
+	outfile.close()
+
+	# modify feature_config.pbtxt
+	print 'modify feature_config.pbtxt\n'
+	infile = open(os.getcwd()+'/mnlm/static/upload/feature_config.pbtxt','rb')
+	contents = infile.readlines()
+	infile.close()
+	for index, line in enumerate(contents):
+		if line.find('output_file') != -1:
+			contents[index] = 'output_file: "' + full_name + '.h5"\n'
+			continue
+		if line.find('file_pattern') != -1:
+			contents[index] = '    file_pattern: "' + full_name + '_path.txt"\n'
+			continue
+		if line.find('mean_file') != -1:
+			contents[index] = '    mean_file: "' + os.getcwd() +'/mnlm/static/upload/pixel_mean.h5"\n'
+			continue
+	outfile = open(full_name+'_config.pbtxt', 'wb')
+	outfile.writelines(contents)
+	outfile.close()
+
+	# extract image feature
+	print 'extract image feature\n'
+	os.system('extract_representation --board=0 --model=' + os.getcwd() + '/mnlm/static/upload/CLS_net_20140621074703.pbtxt --feature-config='+full_name+'_config.pbtxt')
+
+	# read image feature
+	print 'read image feature\n'
+	im_fea = h5py.File(full_name+'.h5', 'r')['hidden7'].value
+
+	# describe
+	print 'get description\n'
+	retr_desc = expr.im2txt(net, z, im_fea[0], k=3, shortlist=15)
+        gen_desc = expr.generate(net, z, im=im_fea[0]).replace('<end>', '').split(';')
+        gen_desc = [de+';' for de in [d.strip() for d in gen_desc] if de]
+	
+	print 'done\n'
 	return render(request, 'description.html', {
-		"retr_desc": '',
-		"gen_desc": '',
-		"im_path":  '/static/upload/'+fname,
+		"retr_desc": retr_desc,
+		"gen_desc": gen_desc,
+		"im_path":  '/static/upload/'+fname + '.jpg',
 		"ran_im_dict": get_rand_ims(), 
 		"cur_index": 0,
 		})

@@ -10,3 +10,5 @@
 			q = DiffInitEval(im_index=i, blank=0, equ=0, similar=0)
 			q.save()
 	其中 1962 是测试图片的数量。
+5. 在 mnlm/static/ 下创建 upload 目录，用于存放上传的图片。
+6. 要测试新的图片需要安装 convnet:[https://github.com/TorontoDeepLearning/convnet],并将 convnet/bin 添加到 PATH 环境变量中。convnet 的模型定义(.pbtxt)、提取特征的配置文件(feature_config.pbtxt) 以及像素均值(pixel_mean.h5) 放在 /mnlm/static/upload/ 下。模型参数文件(.h5)放在项目根目录下，因为 convnet 中编译好的特征提取程序目前只会在当前工作路径下寻找模型参数文件，并且模型定义文件和模型参数文件的定义需要一致。
