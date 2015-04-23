@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.shortcuts import render
@@ -5,6 +6,7 @@ from django.shortcuts import render
 from engine import expr
 from engine import proc
 from engine.utils import stop
+from engine.utils.similar_init import get_similar_init
 
 from .models  import DiffInitEval
 
@@ -20,6 +22,7 @@ import os
 sys.path.append( os.getcwd() + "/mnlm/engine")
 (z, zt) = proc.process()
 net = stop.load_model('mnlm/engine/models/mlbl.pkl')
+test_captions = proc.load_captions(os.getcwd() + '/mnlm/engine/iaprtc12/test_captions.txt')
 
 # Create your views here.
 def index(request):
@@ -31,14 +34,32 @@ def index(request):
 
 def description(request, im_index):
 	global z, zt, net
-	retr_desc = expr.im2txt(net, z, zt['IM'][int(im_index)], k=3, shortlist=15)
-	gen_desc = expr.generate(net, z, im=zt['IM'][int(im_index)]).replace('<end>', '').split(';')
-	gen_desc = [de+';' for de in [d.strip() for d in gen_desc] if de]
-	im_path = expr.get_im_path([int(im_index)], "/static/iaprtc12/images/")
+	descs = []
+	im_index = int(im_index)
+	im_fea = zt['IM'][int(im_index)]
+	# original discription
+	descs.append( ( "原始描述", [test_captions[im_index]] ) )
 
+	# retrival discription
+	descs.append(("检索描述", 
+		get_retr_desc(net, im_fea)))
+
+	# generative discription
+	descs.append(("生成描述-空初始化", 
+		get_gen_desc(net, im_fea)))
+
+	# generative discription using similar init
+	descs.append(("生成描述-相似初始化", 
+		get_gen_desc(net, im_fea, init_type='similar', times=1)))
+
+	# log-bilinear model using similar init
+	netlb = stop.load_model('mnlm/engine/models/lbl.pkl')
+	descs.append(("LB描述-相似初始化",
+		get_LB_desc(net, netlb, im_fea, init_type='similar', times=1)))
+
+	im_path = expr.get_im_path([im_index], "/static/iaprtc12/images/")
 	return render(request, 'description.html', {
-		"retr_desc": retr_desc,
-		"gen_desc": gen_desc,
+		"descs": descs,
 		"im_path": im_path[0],
 		"ran_im_dict": get_rand_ims(), 
 		"cur_index": im_index,
@@ -155,14 +176,19 @@ def uploaddesc(request):
 
 	# describe
 	print 'get description\n'
-	retr_desc = expr.im2txt(net, z, im_fea[0], k=3, shortlist=15)
-        gen_desc = expr.generate(net, z, im=im_fea[0]).replace('<end>', '').split(';')
-        gen_desc = [de+';' for de in [d.strip() for d in gen_desc] if de]
+	descs = []
+	descs.append(("检索描述", 
+		get_retr_desc(net, im_fea[0])))
+
+	descs.append(("生成描述-空初始化", 
+		get_gen_desc(net, im_fea[0])))
+
+	descs.append(("生成描述-相似初始化", 
+		get_gen_desc(net, im_fea[0],init_type='similar')))
 	
 	print 'done\n'
 	return render(request, 'description.html', {
-		"retr_desc": retr_desc,
-		"gen_desc": gen_desc,
+		"descs": descs,
 		"im_path":  '/static/upload/'+fname + '.jpg',
 		"ran_im_dict": get_rand_ims(), 
 		"cur_index": 0,
@@ -179,3 +205,50 @@ def get_rand_ims():
 	random.shuffle(ran_im_index)
 	ran_im_path = expr.get_im_path(ran_im_index[:9], "/static/iaprtc12/images/")
 	return zip(ran_im_index[:9], ran_im_path)
+
+def get_retr_desc(net, im_fea, times=5, shortlist=25):
+	global z
+	return expr.im2txt(net, z, im_fea, k=times, shortlist=shortlist)
+
+def get_gen_desc(net, im_fea, times=5, k=5, init_type='blank', context=5):
+	'''
+	times: the times generate run.
+	k: used in init_type='similar', retrival k similar context.
+	init_type: blank or similar.
+	'''
+	if init_type == 'blank':
+		init = [['<start>'] * context]
+		k = 1
+	elif init_type == 'similar':
+		init = get_similar_init(net, z, im_fea, k=k, shortlist=25, context=context)
+	else:
+		return ['']
+
+	gen_descs = []
+	for i in range(k):
+		for j in range(times):
+			init[i] = init[i][:context]
+			expr.generate(net, z, im=im_fea, init=init[i])
+			desc = ' '.join(init[i]).replace('<end>','').replace('<start>','').split(';')
+			desc = ''.join([de+';' for de in [d.strip() for d in desc] if de])
+			gen_descs.append(desc)
+	return gen_descs
+
+def get_LB_desc(init_net, gen_net, im_fea, times=5,k=5,init_type='blank',context=5):
+	if init_type == 'blank':
+		init = [['<start>'] * context]
+		k=1
+	elif init_type == 'similar':
+		init = get_similar_init(init_net, z, im_fea, k=k,shortlist=25,context=context)
+	else:
+		return ['']
+
+	gen_descs = []
+	for i in range(k):
+		for j in range(times):
+			init[i] = init[i][:context]
+			expr.generate(gen_net, z, init=init[i])
+			desc = ' '.join(init[i]).replace('<end>','').replace('<start>','').split(';')
+			desc = ''.join([de+';' for de in [d.strip() for d in desc] if de])
+			gen_descs.append(desc)
+	return gen_descs

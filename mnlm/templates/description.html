@@ -31,26 +31,18 @@
 								</fieldset>
 							</form>
 							<img class="img-rounded" alt="140x140" src="{{ im_path }}" />
+							{% for title, desc in descs%}
 							<div>
 								<h5 style="margin-top:40px">
-									检索结果：
+									{{ title }}：
 								</h5>
 								<div>
-									{% for d in retr_desc%}
+									{% for d in desc %}
 									<p>{{ d }}</p>
 									{% endfor %}
 								</div>
 							</div>
-							<div>
-								<h5 style="margin-top:40px">
-									生成结果：
-								</h5>
-								<div>
-									{% for d in gen_desc%}
-									<p>{{ d }}</p>
-									{% endfor %}
-								</div>	
-							</div>	
+							{% endfor%}
 						</div>
 						<div class="span6">
 							<a href="/mnlm/{{ cur_index }}">换一批...</a><br />

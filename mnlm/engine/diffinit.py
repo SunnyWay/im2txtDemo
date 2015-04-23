@@ -45,14 +45,7 @@ def cal_similar_init():
 	li = []
 	global test_sample_count
 	for i in range(test_sample_count):
-		similar = lm_tools.im2txt(net, zt['IM'][i], z['word_dict'], 
-			z['tokens'], z['IM'], k=1, shortlist=15)[0]
-		if len(similar) >= context:
-			similar = similar[:context]
-		else:
-			similar = ['<start>']*context + similar
-			similar = similar[-5:]
-	#	print similar
+		similar = get_similar_init(net,z,zt['IM'][i], context=context)[0]
 		li.append(' '.join(similar) + ' ' + expr.generate(net, z, im=zt['IM'][i], init=similar)+'\n')
 	
 	output = open('similar-init-results.txt', 'wb')
