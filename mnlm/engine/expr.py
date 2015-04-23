@@ -5,11 +5,15 @@ from utils import lm_tools
 from numpy.random import RandomState
 from PIL import Image
 
-def get_im_path(indexlist, path):
+def get_im_path(indexlist, path, type='test'):
     ##### Modify these: #####
+    trainloc = 'mnlm/engine/iaprtc12/iaprtc12_train_list.txt'
     testloc = 'mnlm/engine/iaprtc12/iaprtc12_test_list.txt'
     #########################
-    f = open(testloc, 'rb')
+    if type == 'test':
+        f = open(testloc, 'rb')
+    else:
+        f = open(trainloc, 'rb')
     ims = []
     for line in f:
         ims.append(line.strip() + '.jpg')
@@ -89,8 +93,8 @@ def im2txt(net, z, im, k=5, shortlist=15):
     """
     Given image query im, retrieve the top-k captions from tokens
     """
-    captions = lm_tools.im2txt(net, im, z['word_dict'], z['tokens'], z['IM'], k=k, shortlist=shortlist)
-    return [' '.join(c) for c in captions]
+    nearest, captions = lm_tools.im2txt(net, im, z['word_dict'], z['tokens'], z['IM'], k=k, shortlist=shortlist)
+    return nearest, [' '.join(c) for c in captions]
     
 
 def txt2im(net, z, txt, k=5, search=100, seed=1234):

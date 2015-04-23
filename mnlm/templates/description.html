@@ -45,6 +45,16 @@
 							{% endfor%}
 						</div>
 						<div class="span6">
+							 <div style="margin-bottom:40">
+							 	{% if similar_path%}
+							 	<h5 style="margin-top:40px">
+									相似图片：
+								</h5>
+								{% for im in similar_path %}
+								<img class="img-rounded" alt="140x140" src="{{ im }}"  width="140" height="140" style="margin:10"/>
+								{% endfor %}
+							 	{% endif %}
+							 </div>
 							<a href="/mnlm/{{ cur_index }}">换一批...</a><br />
 							 {% for i, im in ran_im_dict %}
 							 <a href="/mnlm/{{ i }}/">

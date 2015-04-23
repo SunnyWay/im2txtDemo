@@ -49,8 +49,8 @@ def description(request, im_index):
 		get_gen_desc(net, im_fea)))
 
 	# generative discription using similar init
-	descs.append(("生成描述-相似初始化", 
-		get_gen_desc(net, im_fea, init_type='similar', times=1)))
+	nearest, gen_desc = get_gen_desc(net, im_fea, init_type='similar', times=1)
+	descs.append(("生成描述-相似初始化",  gen_desc ))
 
 	# log-bilinear model using similar init
 	netlb = stop.load_model('mnlm/engine/models/lbl.pkl')
@@ -58,11 +58,13 @@ def description(request, im_index):
 		get_LB_desc(net, netlb, im_fea, init_type='similar', times=1)))
 
 	im_path = expr.get_im_path([im_index], "/static/iaprtc12/images/")
+	similar_path = expr.get_im_path(nearest, "/static/iaprtc12/images/", type="train")
 	return render(request, 'description.html', {
 		"descs": descs,
 		"im_path": im_path[0],
 		"ran_im_dict": get_rand_ims(), 
 		"cur_index": im_index,
+		"similar_path": similar_path,
 		})
 
 def diffinitresults(request):
@@ -183,8 +185,9 @@ def uploaddesc(request):
 	descs.append(("生成描述-空初始化", 
 		get_gen_desc(net, im_fea[0])))
 
-	descs.append(("生成描述-相似初始化", 
-		get_gen_desc(net, im_fea[0],init_type='similar')))
+	nearest, gen_desc = get_gen_desc(net, im_fea[0],init_type='similar', times=1)
+	descs.append(("生成描述-相似初始化", gen_desc))
+	similar_path = expr.get_im_path(nearest, "/static/iaprtc12/images/", type="train")
 	
 	print 'done\n'
 	return render(request, 'description.html', {
@@ -192,6 +195,7 @@ def uploaddesc(request):
 		"im_path":  '/static/upload/'+fname + '.jpg',
 		"ran_im_dict": get_rand_ims(), 
 		"cur_index": 0,
+		"similar_path": similar_path,
 		})
 
 
@@ -208,7 +212,8 @@ def get_rand_ims():
 
 def get_retr_desc(net, im_fea, times=5, shortlist=25):
 	global z
-	return expr.im2txt(net, z, im_fea, k=times, shortlist=shortlist)
+	nearest, desc = expr.im2txt(net, z, im_fea, k=times, shortlist=shortlist)
+	return desc
 
 def get_gen_desc(net, im_fea, times=5, k=5, init_type='blank', context=5):
 	'''
@@ -220,7 +225,7 @@ def get_gen_desc(net, im_fea, times=5, k=5, init_type='blank', context=5):
 		init = [['<start>'] * context]
 		k = 1
 	elif init_type == 'similar':
-		init = get_similar_init(net, z, im_fea, k=k, shortlist=25, context=context)
+		nearest, init = get_similar_init(net, z, im_fea, k=k, shortlist=25, context=context)
 	else:
 		return ['']
 
@@ -232,14 +237,17 @@ def get_gen_desc(net, im_fea, times=5, k=5, init_type='blank', context=5):
 			desc = ' '.join(init[i]).replace('<end>','').replace('<start>','').split(';')
 			desc = ''.join([de+';' for de in [d.strip() for d in desc] if de])
 			gen_descs.append(desc)
-	return gen_descs
+	if init_type == 'blank':
+		return gen_descs
+	elif init_type == 'similar':
+		return nearest, gen_descs
 
 def get_LB_desc(init_net, gen_net, im_fea, times=5,k=5,init_type='blank',context=5):
 	if init_type == 'blank':
 		init = [['<start>'] * context]
 		k=1
 	elif init_type == 'similar':
-		init = get_similar_init(init_net, z, im_fea, k=k,shortlist=25,context=context)
+		nearest, init = get_similar_init(init_net, z, im_fea, k=k,shortlist=25,context=context)
 	else:
 		return ['']
 

@@ -186,7 +186,7 @@ def nn(net, im, IM, k=1):
     return inds
 
 
-def imquery(net, Im, tokens, word_dict, IM, mean_im, k=1):
+def imquery(net, Im, tokens, word_dict, IM, mean_im, nearest, k=1):
     """
     Return the k-NN captions that describe Im
     """
@@ -197,7 +197,7 @@ def imquery(net, Im, tokens, word_dict, IM, mean_im, k=1):
         denom = perplexity(net, [x], word_dict, Im=mean_im, context=net.context)
         scores[i] = num / denom
     inds = np.argsort(scores)[:k]
-    return [tokens[i][net.context:][:-1] for i in inds]
+    return [nearest[i] for i in inds], [tokens[i][net.context:][:-1] for i in inds]
 
 
 def txt2im(net, txt, IM, word_dict, k):
@@ -223,8 +223,8 @@ def im2txt(net, Im, word_dict, X, IM, k=5, shortlist=15):
     X = [X[i] for i in nearest]
     IM_near = IM[nearest]
     mean_im = IM.mean(0).reshape(1, IM.shape[1])   
-    captions = imquery(net, [Im], X, word_dict, IM, [mean_im], k)
-    return captions
+    nearest, captions = imquery(net, [Im], X, word_dict, IM, [mean_im], nearest, k)
+    return nearest, captions
 
 
 
