@@ -174,6 +174,18 @@ def compute_bleu(net, word_dict, index_dict, tokens, initial=None, IM=None):
 
     return bleu_scores
 
+def batch_bleu(cans, refs):
+    """
+    cans : [ 'XXX', 'XXX', ... ]
+    refs : [ ['XXX', 'XXX', ... ], ['XXX', 'XXX', ... ], ... ]
+    """
+    bleu_scores = np.zeros((len(cans), 3))
+    for i, can in enumerate(cans):
+        n1 = bleu.score_cooked([bleu.cook_test(can, bleu.cook_refs(refs[i], n=1), n=1)], n=1)
+        n2 = bleu.score_cooked([bleu.cook_test(can, bleu.cook_refs(refs[i], n=2), n=2)], n=2)
+        n3 = bleu.score_cooked([bleu.cook_test(can, bleu.cook_refs(refs[i], n=3), n=3)], n=3)
+        bleu_scores[i] = [n1,n2,n3]
+    return bleu_scores
 
 def nn(net, im, IM, k=1):
     """

@@ -7,6 +7,7 @@ from engine import expr
 from engine import proc
 from engine.utils import stop
 from engine.utils.similar_init import get_similar_init
+from engine.utils.lm_tools import batch_bleu
 
 from .models  import DiffInitEval
 
@@ -16,6 +17,7 @@ import time
 import Image
 
 import h5py
+import numpy as np
 
 import sys
 import os
@@ -38,24 +40,25 @@ def description(request, im_index):
 	im_index = int(im_index)
 	im_fea = zt['IM'][int(im_index)]
 	# original discription
-	descs.append( ( "原始描述", [test_captions[im_index]] ) )
+	org_desc = [test_captions[im_index]]
+	descs.append( ( "原始描述", org_desc ) )
 
 	# retrival discription
-	descs.append(("检索描述", 
-		get_retr_desc(net, im_fea)))
+	retr_descs = get_retr_desc(net, im_fea)
+	descs.append(( "检索描述", apd_bleu(retr_descs, org_desc)))
 
 	# generative discription
-	descs.append(("生成描述-空初始化", 
-		get_gen_desc(net, im_fea)))
+	gen_descs = get_gen_desc(net, im_fea)
+	descs.append(("生成描述-空初始化", apd_bleu(gen_descs,org_desc)))
 
 	# generative discription using similar init
-	nearest, gen_desc = get_gen_desc(net, im_fea, init_type='similar', times=1)
-	descs.append(("生成描述-相似初始化",  gen_desc ))
+	nearest, gen_descs = get_gen_desc(net, im_fea, init_type='similar', times=1)
+	descs.append(("生成描述-相似初始化",  apd_bleu(gen_descs,org_desc)))
 
 	# log-bilinear model using similar init
 	netlb = stop.load_model('mnlm/engine/models/lbl.pkl')
-	descs.append(("LB描述-相似初始化",
-		get_LB_desc(net, netlb, im_fea, init_type='similar', times=1)))
+	gen_descs = get_LB_desc(net, netlb, im_fea, init_type='similar', times=1)
+	descs.append(("LB描述-相似初始化", apd_bleu(gen_descs,org_desc)))
 
 	im_path = expr.get_im_path([im_index], "/static/iaprtc12/images/")
 	similar_path = expr.get_im_path(nearest, "/static/iaprtc12/images/", type="train")
@@ -260,3 +263,15 @@ def get_LB_desc(init_net, gen_net, im_fea, times=5,k=5,init_type='blank',context
 			desc = ''.join([de+';' for de in [d.strip() for d in desc] if de])
 			gen_descs.append(desc)
 	return gen_descs
+
+def apd_bleu(descs, refs):
+	"""
+	descs: ['XXX', 'XXX', ...]
+	refs: ['XXX', 'XXX']
+	descs[i] -- refs
+	"""
+	bleus = batch_bleu(descs, [refs for i in range(len(descs))])
+	idxs = np.argsort(bleus[:,0])
+	tus = [(descs[i], bleus[i]) for i in idxs[::-1]]
+	return [ d+' ( '+
+		', '.join(['bleu-'+str(i+1)+': '+'{:.4f}'.format(n) for i, n in enumerate(b)]) +' )' for d,b in tus ]
